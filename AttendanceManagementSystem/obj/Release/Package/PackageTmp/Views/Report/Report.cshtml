@@ -1,0 +1,156 @@
+﻿
+@{
+    ViewBag.Title = "Report";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container"><h2>Report</h2></div>
+
+<div class="container">
+    <form action="">
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="form-group">
+                    <label for="fromdate">From Date:</label>
+                    <input type="date" class="form-control" id="fromdate">
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="form-group">
+                    <label for="todate">To Date:</label>
+                    <input type="date" class="form-control" id="todate">
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="form-group">
+                    <label for="userid">User Id:</label>
+                    <select class="form-control" id="userid">
+                       
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="form-group">
+                    <label for="work">Workplace:</label>
+                    <select class="form-control" id="work">
+                        
+                    </select>
+                </div>
+            </div>
+
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <button type="button" onclick="BtnSubmitClick()" class="btn btn-default">Submit</button>
+            </div>
+        </div>
+
+
+
+    </form>
+
+</div>
+<div class="container" style="margin-top: 20px;height:300px;overflow:auto">
+    <table class="table table-bordered" id="overflow">
+        <thead>
+            <tr>
+                <th>USERCODE</th>
+                <th>WORK PLACE</th>
+                <th>CHECK IN DATE</th>
+                <th>CHECK IN TIME</th>
+                <th>CHECK OUT DATE</th>
+                <th>CHECK OUT TIME</th>
+            </tr>
+        </thead>
+        <tbody>            
+        </tbody>
+    </table>
+</div>
+
+<script>
+    function BtnSubmitClick() {
+        var fromdate = document.getElementById("fromdate").value;       
+        var todate = document.getElementById("todate").value;
+        var userid = document.getElementById("userid").value;
+        var work = document.getElementById("work").value;
+
+        if (fromdate == "") {
+            alert("Please Select From Date");
+            return false;
+        }
+        else if (todate == "") {
+            alert("Please Select To Date");
+            return false;
+        }
+
+        //else if (userid == "") {
+        //    alert("Please Select Userid");
+        //    return false;
+        //}
+        //else if (work == "") {
+        //    alert("Please Select Workplace");
+        //    return false;
+        //}
+
+        // send data to contoller using json
+        else {
+            $.ajax({
+                type: "POST",
+                url: '/Report/BtnSubmit_Click',
+                data: "{'fromdate':'" + fromdate + "','todate':'" + todate + "','userid':'" + userid + "','work':'" + work + "'}",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (data) {
+                    var json = JSON.parse(data);
+                    $("#overflow tbody").empty();
+                    $.each(json, function (index, obj) {
+
+                        var row = '<tr><td>' + obj.USERCODE + '</td><td>' + obj.WORKDESCRYPTION + '</td><td>' + obj.CHECKINDATE + '</td><td>' + obj.CHECKINTIME + '</td><td>' + obj.CHECKOUTDATE + '</td><td>' + obj.CHECKOUTTIME + '</td></tr>'
+                        $("#overflow tbody").append(row)
+                    })
+                }
+            });
+        }
+
+    }
+    function BindDropWorkType() {
+        $.ajax({
+            type: "POST",
+            dataType: 'json',
+            url: '/Report/DropdownBindWorkType',
+            success: function (response) {
+                $("#work").empty();
+                var resdata = JSON.parse(response);
+                $("#work").append($("<option value=''>Select Work Type</option>"));
+                $.each(resdata, function (index, obj) {
+                    $("#work").append('<option value="' + obj.WORKCODE + '">' + obj.WORKDESCRYPTION + '</option>');
+                });
+            }
+        });
+    }
+    function BindDropUser() {
+        $.ajax({
+            type: "POST",
+            dataType: 'json',
+            url: '/Report/DropdownBindUser',
+            success: function (response) {
+                $("#userid").empty();
+                var resdata = JSON.parse(response);
+                $("#userid").append($("<option value=''>Select User</option>"));
+                $.each(resdata, function (index, obj) {
+                    $("#userid").append('<option value="' + obj.USERCODE + '">' + obj.USERNAME + '</option>');
+                });
+            }
+        });
+    }
+    $(document).ready(function () {
+        debugger;
+        BindDropUser();
+        BindDropWorkType();
+
+    });
+</script>
+

@@ -1,0 +1,72 @@
+﻿
+@{
+    ViewBag.Title = "Profile";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2 class="container">User Profile</h2>
+<div class="container">
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="form-group">
+                <label for="usercode">User Code:</label>
+                <input type="text" class="form-control" id="usercode" disabled>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="form-group">
+                <label for="username">User Name:</label>
+                <input type="text" class="form-control" id="username" disabled>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="form-group">
+                <label for="mobile">Mobile No:</label>
+                <input type="text" class="form-control" id="mobile" disabled>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="text" class="form-control" id="email" disabled>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="form-group">
+                <label for="usertype">User Type:</label>
+                <input type="text" class="form-control" id="usertype" disabled>
+            </div>
+        </div>
+    </div>
+
+</div>
+<script>
+    $(document).ready(function () {
+
+        $.ajax({
+            type: "GET",
+            dataType: 'json',
+            url: '/Profile/GetProfile',
+            success: function (response) {
+                var resdata = JSON.parse(response);
+                $.each(resdata, function (index, obj) {
+                    $("#usercode").val(obj.USERCODE);
+                    $("#username").val(obj.USERNAME);
+                    $("#mobile").val(obj.MOBILE);
+                    $("#email").val(obj.EMAIL);
+                    $("#usertype").val(obj.DESCRYPTION);
+                });
+            }
+        });
+
+    });
+</script>
+

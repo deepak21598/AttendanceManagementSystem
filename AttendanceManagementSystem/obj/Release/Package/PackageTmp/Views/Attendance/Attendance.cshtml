@@ -1,0 +1,217 @@
+﻿
+@{
+    ViewBag.Title = "Attendance";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container"><h2>Attendance</h2></div>
+
+<div class="container">
+    <form action="">
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="form-group">
+                    <label for="checkindate">Check In Date:</label>
+                    <input type="date" class="form-control" id="checkindate">
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="form-group">
+                    <label for="checkintime">Check In Time:</label>
+                    <input type="time" class="form-control" id="checkintime">
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="form-group">
+                    <label for="checkoutdate">Check Out Date:</label>
+                    <input type="date" class="form-control" id="checkoutdate">
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="form-group">
+                    <label for="checkouttime">Check Out Time:</label>
+                    <input type="time" class="form-control" id="checkouttime">
+                </div>
+            </div>
+           
+        </div>
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="form-group">
+                    <label for="userid">User Id:</label>
+                    <select class="form-control" id="userid">
+                        
+                    </select>                    
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="form-group">                  
+                    <label for="work">Workplace:</label>
+                    <select class="form-control" id="work">
+                       
+                    </select>
+                </div>
+            </div>
+            
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <button type="button" onclick="BtnSubmitClick()" id="submitButton" class="btn btn-default">Submit</button>
+            </div>
+        </div>
+
+    </form>
+
+</div>
+<script>
+    function BtnSubmitClick() {
+        var checkindate = document.getElementById("checkindate").value;
+        var checkintime = document.getElementById("checkintime").value;
+        var checkoutdate = document.getElementById("checkoutdate").value;
+        var checkouttime = document.getElementById("checkouttime").value;
+        var userid = document.getElementById("userid").value;
+        var work = document.getElementById("work").value;
+        
+        if (checkindate == "") {
+            alert("Please Select Check In Date");
+            return false;
+        }
+        else if (checkintime == "") {
+            alert("Please Select Check In Time");
+            return false;
+        }
+
+        //else if (checkoutdate == "") {
+        //    alert("Please Enter Username");
+        //    return false;
+        //}
+        //else if (checkouttime == "") {
+        //    alert("Please Enter Mobile");
+        //    return false;
+        //}
+        else if (userid == "") {
+            alert("Please Select User Id");
+            return false;
+        }
+        else if (work == "") {
+            alert("Please Select WorkPlace");
+            return false;
+        }
+        
+        // send data to contoller using json
+        else {
+            $.ajax({
+                type: "POST",
+                url: '/Attendance/BtnSubmit_Click',
+                data: "{'checkindate':'" + checkindate + "','checkintime':'" + checkintime + "','checkoutdate':'" + checkoutdate + "','checkouttime':'" + checkouttime + "','userid':'" + userid + "','work':'" + work + "'}",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (response) {
+                    alert("Attendance Submitted Successfully!");
+                    checkAttendance();
+                }
+            });
+        }
+
+    }
+
+    function BindDropWorkType() {      
+        $.ajax({
+            type: "POST",
+            dataType: 'json',
+            url: '/Attendance/DropdownBindWorkType',
+            success: function (response) {
+                $("#work").empty();
+                var resdata = JSON.parse(response);
+                $("#work").append($("<option value=''>Select Work Type</option>"));
+                $.each(resdata, function (index, obj) {
+                    $("#work").append('<option value="' + obj.WORKCODE + '">' + obj.WORKDESCRYPTION + '</option>');
+                });
+            }
+        });
+    }
+    function BindDropUser() {
+        $.ajax({
+            type: "POST",
+            dataType: 'json',
+            url: '/Attendance/DropdownBindUser',
+            success: function (response) {
+                $("#userid").empty();
+                var resdata = JSON.parse(response);
+                $("#userid").append($("<option value=''>Select User</option>"));
+                $.each(resdata, function (index, obj) {
+                    $("#userid").append('<option value="' + obj.USERCODE + '">' + obj.USERNAME + '</option>');
+                });
+            }
+        });
+    }
+    function checkAttendance() {
+        $.ajax({
+            type: "GET",
+            dataType: 'json',
+            url: '/Attendance/CheckAttendance',
+            success: function (response) {
+                var resdata = JSON.parse(response);
+                $.each(resdata, function (index, obj) {                
+                    
+                    if (obj.CHECKINDATETIME != '' && obj.CHECKOUTDATETIME != '') {
+                        debugger;
+                        $("#checkintime").val(obj.CHECKINDATETIME);
+                        $("#checkouttime").val(obj.CHECKOUTDATETIME);                    
+                        $("#work").val(obj.WORKTYPE);
+                        $('#work [value='+obj.WORKTYPE+']').attr('selected', 'true');
+                        $("#checkintime").prop('disabled', true);
+                        $("#checkouttime").prop('disabled', true);                      
+                        $("#checkindate").prop('disabled', true);
+                        $("#checkoutdate").prop('disabled', true);
+                        $("#work").prop('disabled', true); 
+                        $("#submitButton").prop('disabled', true); 
+                    }
+                    else if (obj.CHECKINDATETIME != '') {
+                        debugger;
+                        $("#checkintime").val(obj.CHECKINDATETIME);                                                      
+                        $("#work").val(obj.WORKTYPE);
+                        $('#work [value=' + obj.WORKTYPE + ']').attr('selected', 'true');
+                        $("#checkintime").prop('disabled', true);                       
+                        $("#checkindate").prop('disabled', true); 
+                        $("#checkouttime").prop('disabled', false);
+                        $("#work").prop('disabled', true);
+                    }
+                   
+                });
+            }
+        });
+    }
+    function GetTodayDate() {
+        var tdate = new Date();
+        var dd = tdate.getDate(); //yields day
+        var MM = tdate.getMonth(); //yields month
+        MM = MM + 1;
+        if (MM < 10) {
+            MM = '0' + MM;
+        }
+        if (dd < 10) {
+            dd = '0' + dd;
+        }
+        var yyyy = tdate.getFullYear(); //yields year
+        //var currentDate = dd + "-" + (MM) + "-" + yyyy;
+        var currentDate = yyyy + "-" + (MM) + "-" + dd;
+        debugger;
+        return currentDate;
+    }
+    $(document).ready(function () {
+        debugger;      
+        var date1 = GetTodayDate();
+        $("#checkindate").val(date1);
+        $("#checkoutdate").val(date1);
+        $("#checkindate").prop('disabled', true);
+        $("#checkoutdate").prop('disabled', true);
+        $("#checkouttime").prop('disabled', true);
+        BindDropWorkType();
+        BindDropUser();       
+        checkAttendance();        
+    });
+</script>

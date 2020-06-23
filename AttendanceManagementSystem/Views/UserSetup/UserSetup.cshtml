@@ -1,0 +1,230 @@
+﻿
+@{
+    ViewBag.Title = "UserSetup";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container"><h2>UserSetup</h2></div>
+
+<div class="container">
+    <form action="">
+        <div class="row">
+            <div class="col-lg-3">
+                <div class="form-group">
+                    <label for="mode">Mode:</label>
+                    <select class="form-control" id="mode">
+                        <option value="">Select Mode</option>
+                        <option value="0">Create</option>
+                        <option value="1">Update</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <div class="form-group">
+                    <label for="usercode">UserCode:</label>
+                    <input type="text" class="form-control" id="usercode">
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <div class="form-group">
+                    <label for="username">UserName:</label>
+                    <input type="text" class="form-control" id="username">
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <div class="form-group">
+                    <label for="mobile">Mobile:</label>
+                    <input type="text" class="form-control" id="mobile">
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-3">
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" class="form-control" id="email">
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <div class="form-group">
+                    <label for="pwd">Password:</label>
+                    <input type="email" class="form-control" id="pwd">
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <div class="form-group">
+                    <label for="usertype">User Type:</label>
+                    <select class="form-control" id="usertype">
+                        <option>1</option>
+                        <option>2</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <button type="button" onclick="BtnSubmitClick()" class="btn btn-default">Submit</button>
+             </div>
+            </div>
+
+</form>
+
+</div>
+<div class="container" style="margin-top: 20px;height:300px;overflow:auto">
+    <table class="table table-bordered" id="overflow">
+        <thead>
+            <tr>
+                <th>User Code</th>
+                <th>User Name</th>
+                <th>Mobile</th>
+                <th>Email</th>
+                <th>Password</th>
+                <th>UserType</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    function BtnSubmitClick() {
+        var usercode = document.getElementById("usercode").value;
+        var username = document.getElementById("username").value;
+        var mobile = document.getElementById("mobile").value;
+        var email = document.getElementById("email").value;
+        var password = document.getElementById("pwd").value;
+        var usertype = document.getElementById("usertype").value;
+        var mode = document.getElementById("mode").value;       
+        if (mode == "") {
+            alert("Please Select Mode");
+            return false;
+        }
+        else if (usercode == "") {
+            alert("Please enter usercode");
+            return false;
+        }
+
+        else if (username == "") {
+            alert("Please Enter Username");
+            return false;
+        }
+        else if (mobile == "") {
+            alert("Please Enter Mobile");
+            return false;
+        }
+        else if (email == "") {
+            alert("Please Enter Email");
+            return false;
+        }
+        else if (password == "") {
+            alert("Please Enter Password");
+            return false;
+        }
+        else if (usertype == "") {
+            alert("Please Select Usertype");
+            return false;
+        }
+        // send data to contoller using json
+        else {
+            $.ajax({
+                type: "POST",
+                url: '/UserSetup/BtnSubmit_Click',
+                data: "{'mode':'" + mode + "','usercode':'" + usercode.trim() + "','username':'" + username.trim() + "','mobile':'" + mobile.trim() + "','email':'" + email.trim() + "','password':'" + password.trim() + "','usertype':'" + usertype + "'}",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (response) {
+                    
+                    var json = JSON.parse(response);
+                    alert(json);
+                    BindGrid();
+                }
+            });
+        }
+        
+    }
+
+    function BindGrid() {      
+        $.ajax({
+            type: "POST",
+            dataType: 'json',
+            url: '/UserSetup/BindGrid',
+            success: function (data) {
+                var json = JSON.parse(data);
+                $("#overflow tbody").empty();
+                $.each(json, function (index, obj) {
+
+                    var row = '<tr><td>' + obj.USERCODE + '</td><td>' + obj.USERNAME + '</td><td>' + obj.MOBILE + '</td><td>' + obj.EMAIL + '</td><td>' + obj.PASSWORD + '</td><td>' + obj.DESCRYPTION + '</td><td>' + obj.ACTION + '</td></tr>'
+                    $("#overflow tbody").append(row)
+                })
+            }
+        });
+    }
+    $(document).ready(function () {
+        debugger;
+        BindDropUserType();
+        BindGrid();
+        
+    });
+
+    function BindDropUserType() {
+        
+        $.ajax({
+            type: "POST",
+            dataType: 'json',
+            url: '/UserSetup/DropdownBindUserType',
+            success: function (response) {                
+                $("#usertype").empty();
+                var resdata = JSON.parse(response);
+                $("#usertype").append($("<option value=''>Select UserType</option>"));
+                $.each(resdata, function (index, obj) {
+                    $("#usertype").append('<option value="' + obj.USERTYPE + '">' + obj.DESCRYPTION + '</option>');
+                });
+            }
+        });
+    }
+    function BtnEdit(USERCODE, USERNAME,MOBILE,EMAIL,PASSWORD,DESCRYPTION) {
+        debugger;
+        $('#mode').val(1); 
+        $("#mode").prop('disabled', true); 
+        $('#usercode').val(USERCODE); 
+        $("#usercode").prop('disabled', true); 
+        $('#username').val(USERNAME); 
+        $('#mobile').val(MOBILE); 
+        $('#email').val(EMAIL); 
+        $('#pwd').val(PASSWORD); 
+        $("#usertype option:contains(" + DESCRYPTION + ")").attr('selected', 'selected');
+    }
+    function BtnBlock(USERCODE){
+        debugger;
+        if (!confirm("Are you sure"))
+            return false;
+        $.ajax({
+            type: "POST",
+            url: '/UserSetup/DeleteBlockUser',
+            data: "{'check':'0','usercode':'" + USERCODE + "'}",
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (response) {
+                BindGrid();
+            }
+        });
+
+    }
+    function BtnDelete(USERCODE) {
+        debugger;
+        if (!confirm("Are you sure"))
+            return false;
+        $.ajax({
+            type: "POST",
+            url: '/UserSetup/DeleteBlockUser',
+            data: "{'check':'1','usercode':'" + USERCODE + "'}",
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (response) {
+                BindGrid();
+            }
+        });
+    }
+</script>
+
+
